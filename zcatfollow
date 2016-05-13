@@ -1,0 +1,94 @@
+#!/usr/bin/python
+#
+# Will uncompress a gzipped file in "streaming" mode,
+# like `tail -b +0 -f ` would do.
+#
+# If you pass -n <int> parameter it will try to act like
+# a smart "tail" command: reads until the end of the current
+# file, shows you the last <int> lines, then "follows" the file.
+#
+# If the writer is writing faster than we read, then it may never
+# "detect" the "end of the file"...
+#
+# License: BSD
+# Author: Martin Langhoff <martin.langhoff@gmail.com>
+#
+import sys
+import gzip
+import zlib
+import time
+import getopt
+from collections import deque
+import signal
+
+try:
+    optslist, args = getopt.getopt(sys.argv[1:], "tn:")
+    opts={}
+    for k,v in optslist:                                                             
+    	opts[k] = v
+
+except getopt.GetoptError as err:
+    # print help information and exit:
+    print(err) # will print something like "option -a not recognized"
+    #usage()
+    sys.exit(2)
+
+# lookbehind buffer, defined as a list
+lbbuf=deque([])
+buffering=False
+bufferfull=False
+
+if '-n' in opts:
+	buffering=True
+	lbbufsize=int(opts['-n'])
+
+# tidy up - no errors on ctrl-C, etc
+def sig_exit(signum, frame):
+	# this will prompt fh cleanup, etc
+	sys.exit(0)
+signal.signal(signal.SIGHUP,  sig_exit)
+signal.signal(signal.SIGINT,  sig_exit)
+signal.signal(signal.SIGTERM, sig_exit)
+
+f = gzip.open(args[0], 'r')
+
+# while / readline() sidesteps magic input buffering
+while 1:
+	try:
+		line = f.readline()
+	except IOError:
+		## we ignore  IOError("CRC check failed")
+		## because we are reading an "unfinished"
+		## gzip stream...
+		# line won't get unset if this triggers
+		line = None
+
+	if not line:
+		try:
+			if f.closed:
+				break
+		except AttributeError:
+			# old gzip does not have "closed"
+			pass
+		if buffering:
+			# got to the current tail of it
+			# dump our lookbehind buffer, stop buffering
+			for buf_line in lbbuf:
+				sys.stdout.write(buf_line)
+			buffering=False
+		# internal gzip API use?
+		# f.decompress.flush()
+		time.sleep(0.1)
+	else:
+		if not buffering:
+			sys.stdout.write(line)
+		else:
+			if bufferfull:
+				lbbuf.popleft()
+				lbbuf.append(line)
+			else:
+				lbbuf.append(line)
+				if len(lbbuf) >= lbbufsize:
+					bufferfull=True
+
+
