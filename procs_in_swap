@@ -17,7 +17,9 @@ do
         let SUM=$SUM+$SWAP
     done
     if (( $SUM > 0 )); then
-        echo "PID=$PID swapped $SUM KB ($PROGNAME)"
+	echo "PID=$PID swapped $SUM KB ($PROGNAME)"
+	# the output below is easier to sort
+        # printf '%-25s %10s KB PID=%s swapped\n' $PROGNAME $SUM $PID
     fi
     let OVERALL=$OVERALL+$SUM
     SUM=0
