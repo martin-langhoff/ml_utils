@@ -26,9 +26,12 @@ if ! hash vipe ; then
     echo 'to provide vipe'
     exit 1
 fi
-
+if mountpoint -q /dev/shm ; then
+    # safer tmpdir for vipe
+    export TMPDIR=/dev/shm
+fi
 BASEDIR=$(dirname ${SOURCE})
-export EDITOR=${EDITOR:-vim}
+export EDITOR=${EDITOR:-vim -n}
 KEYFILE=${KEYFILE:-${BASEDIR/keys/ops.key}}
 #
 # vipe uses TMPDIR and cleans up after itself. On modern Linux and OS X, TMPDIR is a ramdisk.
