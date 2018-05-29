@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# Usage - use with provided procs_in_swap_monitor.cron
+#
+
+swapload=$(/usr/bin/vmstat | /usr/bin/grep '^ [0-9]' | /usr/bin/awk '{print $3}')
+
+if [ $swapload -gt 0 ]; then
+    echo "[$(/usr/bin/date)] Running procs_in_swap"
+    BASEDIR="$(dirname "$BASH_SOURCE")"
+    $BASEDIR/procs_in_swap
+fi

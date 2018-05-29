@@ -1,0 +1,8 @@
+# Copy this file into /etc/cron.d/, edit "/path/to/" below
+# to point to the relevant directory, containing both
+# procs_in_swap_monitor and procs_in_swap.
+#
+# Runs every 10 minutes by default, edit cron schedule
+# if necessary.
+#
+*/10 * * * * root /path/to/procs_in_swap_monitor &> /var/log/procs_in_swap.log
