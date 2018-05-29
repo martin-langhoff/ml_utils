@@ -5,4 +5,4 @@
 # Runs every 10 minutes by default, edit cron schedule
 # if necessary.
 #
-*/10 * * * * root /path/to/procs_in_swap_monitor &> /var/log/procs_in_swap.log
+*/10 * * * * root /path/to/procs_in_swap_monitor &>> /var/log/procs_in_swap.log
